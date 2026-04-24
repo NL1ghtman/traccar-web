@@ -112,6 +112,17 @@ const ReplayPage = () => {
 
   const loaded = Boolean(from && to && !loading && positions.length);
 
+  const firstOdometer = positions
+    .slice(0, index + 1)
+    .find((p) => p.attributes?.odometer)
+    ?.attributes.odometer ?? 0;
+
+  const lastOdometer = [...positions]
+    .slice(0, index + 1)
+    .reverse()
+    .find((p) => p.attributes?.odometer)
+    ?.attributes.odometer ?? 0;
+
   const deviceName = useSelector((state) => {
     if (selectedDeviceId) {
       const device = state.devices.items[selectedDeviceId];
@@ -278,7 +289,7 @@ const ReplayPage = () => {
               </Typography>
               <Typography variant="body2">
                 {formatDistance(
-                  (positions[index].attributes?.odometer || 0) - (positions[0].attributes?.odometer || 0),
+                  lastOdometer - firstOdometer,
                   distanceUnit, t,
                 )}
               </Typography>
