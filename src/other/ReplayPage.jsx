@@ -13,7 +13,7 @@ import MapView from '../map/core/MapView';
 import MapRoutePath from '../map/MapRoutePath';
 import MapRoutePoints from '../map/MapRoutePoints';
 import MapPositions from '../map/MapPositions';
-import { formatTime } from '../common/util/formatter';
+import { formatDistance, formatTime } from '../common/util/formatter';
 import ReportFilter, { updateReportParams } from '../reports/components/ReportFilter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatch } from '../reactHelper';
@@ -23,6 +23,7 @@ import StatusCard from '../common/components/StatusCard';
 import MapScale from '../map/MapScale';
 import BackIcon from '../common/components/BackIcon';
 import fetchOrThrow from '../common/util/fetchOrThrow';
+import { useAttributePreference } from '../common/util/preferences';
 import MapOverlay from '../map/overlay/MapOverlay';
 
 const useStyles = makeStyles()((theme) => ({
@@ -72,6 +73,20 @@ const useStyles = makeStyles()((theme) => ({
       marginTop: theme.spacing(1),
     },
   },
+  distanceBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(2),
+    [theme.breakpoints.up('md')]: {
+      marginTop: theme.spacing(1),
+    },
+  },
+  distanceRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing(0.5, 0),
+  },
 }));
 
 const ReplayPage = () => {
@@ -83,6 +98,8 @@ const ReplayPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const defaultDeviceId = useSelector((state) => state.devices.selectedId);
+
+  const distanceUnit = useAttributePreference('distanceUnit');
 
   const [positions, setPositions] = useState([]);
   const [index, setIndex] = useState(0);
@@ -250,6 +267,35 @@ const ReplayPage = () => {
             <ReportFilter onShow={onShow} deviceType="single" loading={loading} />
           </div>
         </Paper>
+        {loaded && (
+          <Paper className={classes.distanceBlock} square>
+            <Typography variant="subtitle1" align="center">
+              {t('sharedDistance')}
+            </Typography>
+            <div className={classes.distanceRow}>
+              <Typography variant="body2" color="textSecondary">
+                {t('positionOdometer')}:
+              </Typography>
+              <Typography variant="body2">
+                {formatDistance(
+                  (positions[index].attributes?.odometer || 0) - (positions[0].attributes?.odometer || 0),
+                  distanceUnit, t,
+                )}
+              </Typography>
+            </div>
+            <div className={classes.distanceRow}>
+              <Typography variant="body2" color="textSecondary">
+                {t('deviceTotalDistance')}:
+              </Typography>
+              <Typography variant="body2">
+                {formatDistance(
+                  (positions[index].attributes?.totalDistance || 0) - (positions[0].attributes?.totalDistance || 0),
+                  distanceUnit, t,
+                )}
+              </Typography>
+            </div>
+          </Paper>
+        )}
       </div>
       {showCard && index < positions.length && (
         <StatusCard
